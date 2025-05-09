@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Select a Cultural Persona</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+    html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+    }
+
+    body {
+        font-family: 'Inter', sans-serif;
+        text-align: center;
+        padding: 4em 1em;
+        font-size: 18px;
+        color: #333;
+        min-height: 100vh;
+        background: linear-gradient(160deg, #e0e7ff, #fef9f3);
+        background-attachment: fixed;
+        background-repeat: no-repeat;
+        background-size: cover;
+        transition: background 0.3s ease, color 0.3s ease;
+    }
+
+    h1 {
+        font-size: 36px;
+        margin-bottom: 0.5em;
+        color: #1a1a1a;
+    }
+
+    .description {
+        font-size: 18px;
+        margin-bottom: 2em;
+        color: #555;
+    }
+
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .personas {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 2.5em;
+    }
+
+    .persona {
+        background: white;
+        border-radius: 16px;
+        padding: 20px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        width: 180px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+        cursor: pointer;
+    }
+
+    .persona:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 12px 24px rgba(4, 4, 4, 0.344);
+    }
+
+    .avatar {
+        width: 130px;
+        height: 130px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid #007bff;
+        transition: border 0.2s ease;
+    }
+
+    .name {
+        margin-top: 1em;
+        font-weight: 600;
+        font-size: 1.1em;
+        color: #007bff;
+    }
+
+    form {
+        display: inline-block;
+    }
+
+    #theme-toggle {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: #ffffffcc;
+        border: none;
+        padding: 10px 16px;
+        font-size: 14px;
+        border-radius: 8px;
+        cursor: pointer;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        transition: background 0.2s ease;
+    }
+
+    #theme-toggle:hover {
+        background: #f0f0f0;
+    }
+
+    /* --- Dark Mode --- */
+    body.dark-mode {
+        background: linear-gradient(160deg, #0f172a, #1e293b);
+        color: #f8fafc;
+    }
+
+    body.dark-mode .persona {
+        background: #1e293b;
+    }
+
+    body.dark-mode .name {
+        color: #3b82f6;
+    }
+
+    body.dark-mode .description {
+        color: #cbd5e1;
+    }
+
+    body.dark-mode .title {
+        color: #cbd5e1;
+    }
+
+    body.dark-mode .persona:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 12px 24px rgba(144, 140, 140, 0.238);
+    }
+
+    body.dark-mode #theme-toggle {
+        background: #1e293bcc;
+        color: #f8fafc;
+    }
+
+    body.dark-mode #theme-toggle:hover {
+        background: #334155;
+    }
+
+    .tooltip {
+    position: fixed;
+    background: #333;
+    color: #fff;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 14px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+    z-index: 1000;
+    white-space: nowrap;
+    }
+
+    </style>
+</head>
+<body>
+    <button id="theme-toggle">🌗 Toggle Theme</button>
+
+    <div class="container">
+    <h1 class="title">Select a Cultural Guide</h1>
+    <p class="description">Click on a persona to begin a conversation and learn about their traditions, values, and stories.</p>
+
+    <div class="personas">
+        {% for key, data in personas.items() %}
+        <form method="post" action="/chat">
+        <input type="hidden" name="persona_key" value="{{ key }}">
+        <button type="submit" style="background:none;border:none;">
+            <div class="persona" data-name="{{ data.name }}">
+            <img src="{{ url_for('static', path='images/' + data.avatar) }}" class="avatar" alt="{{ data.name }}">
+            <div class="name">{{ data.menu_name }}</div>
+            </div>
+        </button>
+        </form>
+        {% endfor %}
+    </div>
+    </div>
+    <div id="tooltip" class="tooltip"></div>
+    <script>
+    const toggleBtn = document.getElementById('theme-toggle');
+
+    // Apply saved theme on load
+    if (localStorage.getItem('theme') === 'dark') {
+        document.body.classList.add('dark-mode');
+    }
+
+    toggleBtn.addEventListener('click', () => {
+        document.body.classList.toggle('dark-mode');
+        const isDark = document.body.classList.contains('dark-mode');
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    });
+
+    // Tooltip logic
+    const tooltip = document.getElementById('tooltip');
+    document.querySelectorAll('.persona').forEach(card => {
+        const name = card.dataset.name;
+
+        card.addEventListener('mousemove', (e) => {
+        tooltip.style.top = (e.clientY + 15) + 'px';
+        tooltip.style.left = (e.clientX + 15) + 'px';
+        });
+
+        card.addEventListener('mouseenter', () => {
+        tooltip.textContent = name;
+        tooltip.style.opacity = 1;
+        });
+
+        card.addEventListener('mouseleave', () => {
+        tooltip.style.opacity = 0;
+        });
+    });
+    </script>
+</body>
+</html>
