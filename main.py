@@ -69,7 +69,8 @@ async def load_chat(request: Request, persona_key: str):
 async def chat(
     request: Request,
     persona_key: str = Form(...),
-    message: Optional[str] = Form(default=None)
+    message: Optional[str] = Form(default=None),
+    user_id: str = Form(...)
 ):
     persona = personas.get(persona_key)
     if not persona or not message or not message.strip():
@@ -82,7 +83,7 @@ async def chat(
             "translated_language": None
         })
 
-    reply = client.fetch_response(message, persona_key)
+    reply = client.fetch_response(user_id, message, persona_key)
     parts = reply.split("||")
     real_text = parts[0].strip()
     english = parts[1].strip()

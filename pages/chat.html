@@ -318,10 +318,19 @@
       <input type="hidden" name="persona_key" value="{{ persona_key }}">
       <div class="input-area">
         <input type="text" id="user-message" name="message" placeholder="Ask something..." required>
+        <input type="hidden" id="user-id" name="user_id" value="">
         <button type="submit" id="send-btn">Send</button>
       </div>
     </form>
   </div>
+
+  <script>
+    if (!localStorage.getItem('user_id')) {
+        const uid = crypto.randomUUID();
+        localStorage.setItem('user_id', uid);
+    }
+</script>
+
 
   <script>
     const chatBox = document.getElementById("chat-box");
@@ -329,6 +338,7 @@
     const messageInput = document.getElementById("user-message");
     const personaName = "{{ persona.name }}";
     const personaAvatar = "{{ url_for('static', path='images/' + persona.avatar) }}";
+    document.getElementById("user-id").value = localStorage.getItem("user_id");
 
     let allMessages = []; // Store every message element
     let visibleCount = 50;
@@ -378,7 +388,6 @@
     }
 
     const sendBtn = document.getElementById("send-btn");
-
     form.addEventListener("submit", async function (e) {
       e.preventDefault();
 

@@ -8,6 +8,8 @@ class Model:
     Wrapper class for interacting with an OpenAI-compatible LLM model.
     """
     
+    MAX_CONVERSATION_LENGTH = 30
+    
     def __init__(self, model_base_url: str, model: str, api_key: str, is_vision: bool = False):
         """
         Initializes the model configuration.
@@ -28,11 +30,10 @@ class Model:
         return open(f"./prompts/{persona}.txt", "r", encoding="utf-8").read()
 
     @staticmethod
-    def get_chat(group: str) -> list:
+    def get_chat(user_id: str, group: str) -> list:
         # Ensure the chats directory exists
-        os.makedirs('./chats', exist_ok=True)
-        
-        path = f'./chats/{group}.json'
+        os.makedirs(f'./chats/{user_id}', exist_ok=True)
+        path = f'./chats/{user_id}/{group}.json'
 
         # If file doesn't exist, create it with empty dictionary
         if not os.path.exists(path):
@@ -45,8 +46,8 @@ class Model:
             return data[-20:] if isinstance(data, list) else []
     
     @staticmethod
-    def save_chat(group: str, conversation: dict) -> None:
-        path = f'./chats/{group}.json'
+    def save_chat(user_id: str, group: str, conversation: dict) -> None:
+        path = f'./chats/{user_id}/{group}.json'
         with open(path, "w", encoding='utf-8') as f:
             json.dump(conversation, f, indent=2)
             
@@ -66,10 +67,10 @@ class Model:
         content = response.choices[0].message.content
         return content
     
-    def fetch_response(self, content: str, group: str) -> dict:
-        conversation = self.get_chat(group)
-        if len(conversation) == 0:
-            conversation.append({
+    def fetch_response(self, user_id: str, content: str, group: str) -> dict:
+        conversation = self.get_chat(user_id, group)[-self.MAX_CONVERSATION_LENGTH:]
+        if len(conversation) == 0 or conversation[0]["role"] != "system":
+            conversation.insert(0, {
                 "role": "system",
                 "content": self.get_prompt(group)
             })
@@ -83,12 +84,11 @@ class Model:
                     }
                 ]
             })
+        print('\n'.join([i['role'] for i in conversation]))
         try:
             model_response = self.call_chat_completion(list(conversation))
         except RetryError:
             model_response = "  ||  "
-        
-        print(model_response)
         
         conversation.append({
                 "role": "assistant",
@@ -99,5 +99,5 @@ class Model:
                     }
                 ]
             })
-        self.save_chat(group, conversation)
+        self.save_chat(user_id, group, conversation)
         return model_response
