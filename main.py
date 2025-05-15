@@ -21,7 +21,6 @@ templates = Jinja2Templates(directory="pages")
 MODEL_BASE_URL = "https://openrouter.ai/api/v1"
 MODEL = "google/gemini-2.0-flash-001"
 API_KEY = os.getenv("API_KEY")  # Replace with your actual key
-print(API_KEY)
 
 client = Model(MODEL_BASE_URL, MODEL, API_KEY)
 
